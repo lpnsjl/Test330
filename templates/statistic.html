@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>时间与频率散点图</title>
+    <script src="/static/echarts.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="main" style="width: 800px; height: 600px;"></div>
+采样点:<input id="sample" type="text" name="sample" value="3,5,6,7">
+<br>
+时间：<input id="time1" type="text" name="time1" value="2017-11-30 00:00:00"/>
+<input id="time2" type="text" name="time2" value="2017-12-01 00:00:00"/>
+<br>
+频率：<input id="fre1" type="text" name="fre1" value="1600"/>
+<input id="fre2" type="text" name="fre2" value="1700"/>
+<br>
+电平：<input id="level1" type="text" name="level1" value="0"/>
+<input id="level2" type="text" name="level2" value="20"/>
+<br>
+<button type="button" id="btn">submit</button>
+<script>
+    function draw(){
+        var sample = $('#sample').val();
+        var time1 = $('#time1').val();
+        var time2 = $('#time2').val();
+        var fre1 = $('#fre1').val();
+        var fre2 = $('#fre2').val();
+        var level1 = $('#level1').val();
+        var level2 = $('#level2').val();
+
+
+        $.get('/test/statisticHandle'+sample+'_'+time1+'_'+time2+'_'+fre1+'_'+fre2+'_'+level1+'_'+level2+'/',function(data){
+            var myCharts = echarts.init(document.getElementById('main'));
+            var option = {
+                title: {
+                    text: '次数/频率',
+                },
+
+                grid: {
+                    containLabel: true
+                },
+
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+
+                xAxis: {
+                    type: 'value',
+                    name: '频率(MHZ)',
+                    min: 1646,
+                    max: 1648,
+                    splitNumber: 10,
+                    splitLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        show: false
+                    },
+
+                    axisLine:{
+                        symbol: ['none', 'arrow'],
+                        // symbolSize: [20,20]
+                    }
+                },
+
+                yAxis: {
+                    type: 'value',
+                    name: '出现次数',
+                    splitLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        show: false
+                    },
+
+                    axisLine:{
+                        symbol: ['none', 'arrow'],
+                        // symbolSize: [20,20]
+                    }
+                },
+
+                series: [
+                    {
+                        type: 'scatter',
+                        data: data.data,
+
+                    }
+                ]
+            };
+            console.log(option);
+            myCharts.clear();
+            myCharts.setOption(option);
+        });
+
+    };
+
+    draw();
+    $(function(){
+       $('#btn').click(function(){
+            // alert(111);
+            draw();
+
+        });
+    });
+</script>
+</body>
+</html>
