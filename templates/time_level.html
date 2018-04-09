@@ -17,7 +17,7 @@
 <input id="fre2" type="text" name="fre2" value="1700"/>
 <br>
 电平：<input id="level1" type="text" name="level1" value="0"/>
-<input id="level2" type="text" name="level2" value="20"/>
+<input id="level2" type="text" name="level2" value="350"/>
 <button type="button" id="btn">submit</button>
 <script>
     function dynamic(data){
@@ -31,7 +31,16 @@
                     symbolSize: 2,
                     // visualMap: true
                 };
+                var item1 = {
+                    name: point,
+                    data: data[point],
+                    type: 'scatter',
+                    smooth: true,
+                    symbolSize: 2,
+                    // visualMap: true
+                };
                 serie.push(item);
+                serie.push(item1);
             };
             return serie
         };
@@ -52,13 +61,12 @@
         var level1 = $('#level1').val();
         var level2 = $('#level2').val();
 
-        console.log(fre1);
-        console.log(fre2);
+        // console.log(fre1);
+        // console.log(fre2);
         // alert('我已经运行了');
         $.get('/test/time_levelHandle'+sample+'_'+time1+'_'+time2+'_'+fre1+'_'+fre2+'_'+level1+'_'+level2+'/',function(data){
             // console.log(data.data);
             // console.log(dynamic(data.data));
-            console.log('hello');
             var myCharts = echarts.init(document.getElementById('main'));
 
             var option = {
@@ -80,6 +88,48 @@
                     }
                 ],
 
+               {% comment %} visualMap: {
+                    type: 'continuous',
+                    dimension: 1,
+                    calculable: true,
+                    min: 0,
+                    max: 500,
+                    inRange: {
+                    color: ['#f2c31a', '#24b7f2', 'red'],
+        }
+                },{% endcomment %}
+
+                {% comment %}visualMap:{
+                    type: 'piecewise',
+                    min: 0,
+                    max: 500,
+                    splitNumber: 5,
+                    right: 10,
+                    top: 30,
+                    color: ['#d94e5d','#eac736','#50a3ba']
+                },{% endcomment %}
+
+                brush: {
+            // yAxisIndex: 0,
+                    xAxisIndex: 0,
+            brushLink: 'all',
+                    brushLink: null,
+            outOfBrush: {
+                colorAlpha: 0,
+                color: 'red'
+            }
+        },
+
+                 toolbox: {
+            feature: {
+                dataZoom: {
+                    yAxisIndex: false
+                },
+                brush: {
+                    type: ['lineY', 'clear', 'lineX', 'rect']
+                }
+            }
+        },
 
                 tooltip: {
                     trigger: 'axis',
@@ -128,14 +178,87 @@
 
                 series: dynamic(data.data)
             };
+            function renderBrushed(params){
+                var brushed = [];
+                var brushComponent = params.batch[0].selected;
+                // console.log(brushComponent);
+                // console.log(brushComponent);
+                var json_data = {};
+                for (var i = 1; i < brushComponent.length; i+=2){
+                    var serie = brushComponent[i]; // 选中的系列
+                    var dataIndices = serie.dataIndex; //用这些 dataIndex，可以去原始数据中找到真正的值
+                    console.log(dataIndices);
+                    var serieIndex = serie.seriesIndex;
+                    // console.log(serieIndex);
+                    data = option.series[serieIndex];
+                    // console.log(data.name);
+                    // console.log(data.data);
+
+                    var res = [];
+                    for (var k = 0; k < dataIndices.length; k++){
+                        res.push(data.data[dataIndices[k]]);
+                        // console.log(data.data[dataIndex]);
+                    }
+                    if(res.length != 0){
+                        json_data[data.name] = res;
+                    }
+
+                }
+
+                console.log(json_data);
+                var fres = [];
+                var levels = [];
+                for(var fre in json_data){
+                    var data = json_data[fre];
+                    // console.log(data);
+                    fres.push(parseFloat((fre)));
+                    for (var j = 0; j < data.length; j++){
+                        levels.push(data[j][1]);
+                    }
+                }
+                console.log(levels);
+                var max_level = Math.max.apply(null, levels); //最大电平
+                var min_level = Math.min.apply(null, levels); //最小电平
+                var sum = 0;
+                for (var i = 0; i < levels.length; i++){
+                    sum += levels[i];
+                }
+                var avg_level = sum/levels.length; //平均电平
+                var max_fre = Math.max.apply(null, fres); //最大频率
+                var min_fre = Math.min.apply(null, fres); //最小频率
+
+                brushed.push('最大电平:' + max_level);
+                brushed.push('最小电平:' + min_level);
+                brushed.push('平均电平:' + avg_level.toFixed(2));
+                brushed.push('频率范围:' + min_fre+'-'+ max_fre);
+                myCharts.setOption({
+        title: {
+            backgroundColor: '#333',
+            text: '数据统计: \n' + brushed.join('\n'),
+            bottom: 0,
+            right: 0,
+            width: 100,
+            textStyle: {
+                fontSize: 12,
+                color: '#fff'
+            }
+        }
+    });
+
+            }
+
+        myCharts.on('brushselected', renderBrushed);
             // console.log(option);
             myCharts.clear();
             myCharts.setOption(option);
+
         });
 
     };
 
+
     draw();
+
     $(function(){
        $('#btn').click(function(){
             // alert(111);
@@ -146,3 +269,40 @@
 </script>
 </body>
 </html>
+{#function renderBrushed(params){#}
+{#                var brushComponent = params.batch[0];#}
+{#                var res = {};#}
+{#                for(var sIdx = 0; sIdx < brushComponent.selected.length; sIdx++){#}
+{#                    var dataIndices = brushComponent.selected[sIdx].dataIndex;#}
+{#                    data = option.series[sIdx];#}
+{#                    for (var i = 0; i < dataIndices.length; i++){#}
+{#                        var dataIndex = dataIndices[i];#}
+{#                        for (var fre in data){#}
+{#                            res[fre] = data[dataIndex];#}
+{#                        }#}
+{#                    }#}
+{#                }#}
+{#                console.log(res);#}
+{#            };#}
+{##}
+{##}
+{##}
+{#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////#}
+{#//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////#}
+{#function renderBrushed(params) {#}
+{#            // var mainSeries = params.batch[0].selected[0]#}
+{#                var res = [];#}
+{#            var dataIndices = params.batch[0].selected[0].dataIndex;#}
+{#            for(var fre in data.data){#}
+{#                data = data.data[fre];#}
+{#                console.log(data);#}
+{##}
+{#            }#}
+{#            for (var i = 0; i < dataIndices.length; i++) {#}
+{#            var dataIndex = dataIndices[i];#}
+{#            // console.log(dataIndex);#}
+{#            // console.log(data[dataIndex]);#}
+{#            res.push(data[dataIndex]);#}
+{#        }#}
+{#        console.log(res);#}
+{#        }#}

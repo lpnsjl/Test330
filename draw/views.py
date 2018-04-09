@@ -114,7 +114,7 @@ def diff_statisticHandle(request, sample, time1, time2, fre1, fre2, level1, leve
 # 同一频率时间/电平的关系
 def time_level(request):
     click_fre = request.GET.get('click_fre')
-    if click_fre == '':
+    if click_fre == None:
         click_fre = 0
     context = {
         'click_fre': click_fre
