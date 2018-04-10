@@ -7,14 +7,14 @@
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-<a href="/test/time_scatter/">时间/频率图</a>
+<a href="{% url 'draw:time_scatter' %}">时间/频率图</a>
 <br>
-<a href="/test/level_scatter/">电平/频率图</a>
+<a href="{% url 'draw:level_scatter' %}">电平/频率图</a>
 <br>
-<a href="/test/statistic/">频率统计图</a>
+<a href="{% url 'draw:statistic' %}">频率统计图</a>
 <br>
-<a href="/test/diff_statistic/">不同站点次数/频率图</a>
+<a href="{% url 'draw:diff_statistic' %}">不同站点次数/频率图</a>
 <br>
-<a href="/test/time_level/">时间与电平图</a>
+<a href="{% url 'draw:time_level' %}">时间与电平图</a>
 </body>
 </html>

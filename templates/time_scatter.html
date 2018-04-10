@@ -80,25 +80,6 @@
                     }
                 ],
 
-                 brush: {
-            yAxisIndex: 'all',
-            brushLink: 'all',
-            outOfBrush: {
-                colorAlpha: 0,
-                // color: '#ddd'
-            }
-        },
-
-                 toolbox: {
-            feature: {
-                dataZoom: {
-                    yAxisIndex: false
-                },
-                brush: {
-                    type: ['lineY', 'clear', 'lineX']
-                }
-            }
-        },
 
                 tooltip: {
                     trigger: 'axis',
@@ -146,12 +127,6 @@
 
                 series: dynamic(data.data)
             };
-
-            function renderBrushed(params) {
-            // var mainSeries = params.batch[0].selected[0];
-            console.log(params.batch[0].selected[0].dataIndex);
-        }
-        myCharts.on('brushselected', renderBrushed);
             console.log(option);
             myCharts.clear();
             myCharts.setOption(option);
