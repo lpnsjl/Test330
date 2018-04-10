@@ -20,6 +20,8 @@ urlpatterns = [
     url(r'^time_level/$', views.time_level, name='time_level'),
     url(r'^time_levelHandle(.*)_(.*)_(.*)_(.*)_(.*)_(.*)_(.*)/$', views.time_levelHandle, name='time_levelHandle'),
 
+    url(r'^inquire/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/(.*)/$', views.inquire, name='inquire')
+
 
 ]
 

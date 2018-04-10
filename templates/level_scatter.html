@@ -25,6 +25,7 @@
     function dynamic(data){
             var serie = [];
             for (var point in data){
+                // console.log(point);
                 var item = {
                     name: point,
                     data: data[point],
@@ -67,12 +68,12 @@
                     toolbox: ['rect', 'polygon', 'lineX', 'lineY', 'clear'],
                     brushLink: null,
                     xAxisIndex: 0,
-                    yAxisIndex: 0
+                    // yAxisIndex: 0
                 },
 
 
                 tooltip: {
-                    trigger: 'axis',
+                    trigger: 'item',
                     axisPointer: {
                         type: 'cross'
                     }
@@ -116,20 +117,25 @@
                 series: dynamic(data.data)
             };
             // console.log(option);
+            // myCharts.clear();
             myCharts.on('brushselected', renderBrushed);
-
+            // console.log(option);
 
 ////////////// 框选执行的函数/////////////////////////////////////////////////////////////////////////////////////////////
             function renderBrushed(params){
                 var brushed = [];
                 var json_data = {};
                 var brushComponent = params.batch[0].selected;
+                // console.log(brushComponent);
             // 遍历所有的系列
                 for (var i = 0; i < brushComponent.length; i++){
                     var serie = brushComponent[i]; // 选中的系列
+                    // console.log(serie);
                     var seriesIndex = serie.seriesIndex; // 系列的序号(索引)
                     var dataIndices = serie.dataIndex; // 系列中选中的点对应的索引
-                    var data = option.series[seriesIndex]; // 选中系列的数据
+                    // console.log(myCharts.getOption()); // 处理了bug: option不能被及时的清除,所以直接用myCharts.getOption()得到option数据
+                    var data = myCharts.getOption().series[seriesIndex]; // 选中系列的数据
+                    // console.log(data);
                     var res = [];
                     // 取出选中的数据,并放入数组res中
                     for (var j = 0; j < dataIndices.length; j++){
@@ -139,7 +145,7 @@
                         json_data[data.name] = res;
                     }
             }
-            // console.log(json_data);
+                // console.log(json_data);
                 var fres = []; // 存储所有选取数据频率的数组
                 var levels = []; // 存储所有选取数据电平的数组
                 for(var station in json_data){
@@ -148,10 +154,44 @@
                         fres.push(data[k][0]);
                         levels.push(data[k][1]);
                     }
-                }
-
+                };
                 console.log(fres);
+                //将框选获取的数据传到后台进行数据统计
+                var max_fre = Math.max.apply(null, fres); //最大频率
+                var min_fre = Math.min.apply(null, fres); //最小频率
 
+                var sample = $('#sample').val();
+                var time1 = $('#time1').val();
+                var time2 = $('#time2').val();
+                var level1 = $('#level1').val();
+                var level2 = $('#level2').val();
+
+                console.log(level1);
+                console.log(level2);
+                $.get('/test/inquire/'+min_fre+'/'+max_fre+'/'+sample+'/'+time1+'/'+time2+'/'+level1+'/'+level2+'/', function(data){
+                    if (data.code == 0){
+                        return 0;
+                    }
+                    // console.log(data);
+                    var brushed = data.data;
+                    // console.log(brushed);
+                    myCharts.setOption({
+                        title: {
+                            backgroundColor: '#333',
+                            text: '数据统计: \n' + brushed.join('\n'),
+                            bottom: 0,
+                            right: 0,
+                            width: 100,
+                            textStyle: {
+                                fontSize: 12,
+                                color: '#fff'
+                            }
+                        }
+                    });
+                });
+
+                /*
+                // console.log(fres);
                 var max_level = Math.max.apply(null, levels); //最大电平
                 var min_level = Math.min.apply(null, levels); //最小电平
                 var sum = 0;
@@ -180,12 +220,13 @@
                         }
                     }
                 });
+                */
         }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
             myCharts.clear();
             myCharts.setOption(option);
+
         });
 
 
